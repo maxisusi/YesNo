@@ -63,18 +63,19 @@ fn handleRequest(res: *http.Server.Response, allocator: std.mem.Allocator) !void
     }
 
     if (std.mem.startsWith(u8, res.request.target, "/")) {
-        if (std.mem.indexOf(u8, res.request.target, "?chunked") != null) {
-            res.transfer_encoding = .chunked;
-        } else {
-            res.transfer_encoding = .{ .content_length = 10 };
-        }
-        try res.headers.append("content-type", "text/plain");
+        const html =
+            \\ <body>
+            \\ <h1>Hello world</h1>
+            \\ </body>
+        ;
+
+        res.transfer_encoding = .{ .content_length = html.len };
+        try res.headers.append("content-type", "text/html");
 
         try res.do();
 
         if (res.request.method != .HEAD) {
-            try res.writeAll("Zig ");
-            try res.writeAll("Bits \n");
+            try res.writeAll(html);
             try res.finish();
         } else {
             res.status = .not_found;
