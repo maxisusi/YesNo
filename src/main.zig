@@ -75,7 +75,45 @@ fn handleRequest(res: *http.Server.Response, allocator: std.mem.Allocator) !void
         var html = std.ArrayList(u8).init(allocator);
         defer html.deinit();
 
-        if (yes_no == 1) try html.appendSlice("<h1>Yes</h1>") else try html.appendSlice("<h1>No</h1>");
+        const yes =
+            \\<body><h1>Yes</h1></body> 
+            \\<style>
+            \\ body {
+            \\ background-color: #6CB4EE;
+            \\ color: white;     
+            \\ }
+            \\
+            \\ h1 {
+            \\ font-size: 15em;   
+            \\ width: 100%;
+            \\ height: 100%;
+            \\ display: flex;
+            \\ justify-content: center;
+            \\ align-items: center;
+            \\ }
+            \\
+            \\</style>
+        ;
+        const no =
+            \\<body><h1>No</h1></body> 
+            \\<style>
+            \\ body {
+            \\ background-color: #FF033E;
+            \\ color: white;     
+            \\ }
+            \\
+            \\ h1 {
+            \\ font-size: 15em;   
+            \\ width: 100%;
+            \\ height: 100%;
+            \\ display: flex;
+            \\ justify-content: center;
+            \\ align-items: center;
+            \\ }
+            \\
+            \\</style>
+        ;
+        if (yes_no == 1) try html.appendSlice(yes) else try html.appendSlice(no);
 
         res.transfer_encoding = .{ .content_length = html.items.len };
         try res.headers.append("content-type", "text/html");
