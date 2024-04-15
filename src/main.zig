@@ -6,8 +6,8 @@ const log = std.log.scoped(.server);
 pub fn main() !void {
 
     // Set server ports
-    const server_addr = "127.0.0.1";
-    const server_port = 8000;
+    const server_addr = "10.20.0.70";
+    const server_port = 9333;
 
     // Definie memory allocator
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
