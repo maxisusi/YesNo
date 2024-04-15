@@ -11,7 +11,7 @@ pub fn main() !void {
 
     // Definie memory allocator
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    // defer std.debug.assert(gpa.deinit == .ok);
+    defer std.debug.assert(gpa.deinit() == .ok);
 
     const allocator = gpa.allocator();
 
@@ -54,6 +54,15 @@ fn runServer(server: *http.Server, allocator: std.mem.Allocator) !void {
 fn handleRequest(res: *http.Server.Response, allocator: std.mem.Allocator) !void {
     log.info("{s} {s} {s}", .{ @tagName(res.request.method), @tagName(res.request.version), res.request.target });
 
+    var prng = std.rand.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.os.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
+
+    const rand = prng.random();
+    const yes_no = rand.intRangeAtMost(u8, 0, 1);
+
     // Read the request
     const body = try res.reader().readAllAlloc(allocator, 8192);
     defer allocator.free(body);
@@ -63,19 +72,18 @@ fn handleRequest(res: *http.Server.Response, allocator: std.mem.Allocator) !void
     }
 
     if (std.mem.startsWith(u8, res.request.target, "/")) {
-        const html =
-            \\ <body>
-            \\ <h1>Hello world</h1>
-            \\ </body>
-        ;
+        var html = std.ArrayList(u8).init(allocator);
+        defer html.deinit();
 
-        res.transfer_encoding = .{ .content_length = html.len };
+        if (yes_no == 1) try html.appendSlice("<h1>Yes</h1>") else try html.appendSlice("<h1>No</h1>");
+
+        res.transfer_encoding = .{ .content_length = html.items.len };
         try res.headers.append("content-type", "text/html");
 
         try res.do();
 
         if (res.request.method != .HEAD) {
-            try res.writeAll(html);
+            try res.writeAll(html.items);
             try res.finish();
         } else {
             res.status = .not_found;
