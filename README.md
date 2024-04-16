@@ -3,3 +3,5 @@ This is a simple web server written in Zig using only the standard library `std.
 
 I wanted this since it's hard for me to make unimportant decisions, especially on vacation when I'm presented with two options,
 I don't want to waste time analyzing the pros and cons and this app is just the perfect for my use case. 
+
+The application is now self hosted and available here : https://yesno.gracefulspice.com/
